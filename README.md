@@ -1,7 +1,7 @@
 # Music Taste Recommender
 
 A hybrid (content-based + collaborative filtering) music recommender, evaluated against
-13.4 million real listening events — built as a portfolio case study in recommender
+13.4 million real listening events — built as a case study in recommender
 systems and honest data storytelling.
 
 **The question:** can audio features alone tell you what a listener wants, or do you
