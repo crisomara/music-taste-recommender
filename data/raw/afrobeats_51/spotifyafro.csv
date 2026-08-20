@@ -1,0 +1,51 @@
+name,album,artist,release_date,length,popularity,danceability,acousticness,danceability,energy,instrumentalness,liveness,loudness,speechiness,tempo,time_signature,genre
+For My Hand (feat. Ed Sheeran),"Love, Damini",Burna Boy,2022-07-07,159124,66,0.853,0.18,0.853,0.471,0.000136,0.207,-7.766,0.234,104.021,4,"afro dancehall,dancehall,nigerian hip hop,nigerian pop"
+10 Toes (feat. Omah Lay),5 Star,King Promise,2022-07-22,177067,56,0.751,0.139,0.751,0.564,3.02e-06,0.142,-7.837,0.164,103.952,4,"afropop,azontobeats,ghanaian alternative,ghanaian pop"
+"Sugarcane (Remix) [feat. King Promise, Mayorkun & Darkoo]","Sugarcane (Remix) [feat. King Promise, Mayorkun & Darkoo]",Camidoh,2022-04-08,251286,72,0.582,0.308,0.582,0.695,5.9e-06,0.112,-5.506,0.0975,101.005,4,"afro r&b,ghanaian pop"
+KU LO SA - A COLORS SHOW,KU LO SA - A COLORS SHOW,Oxlade,2022-06-10,147580,71,0.649,0.307,0.649,0.655,0.0,0.22,-5.534,0.0652,92.9,4,"afropop,azontobeats,nigerian pop"
+Buga (Lo Lo Lo),Buga (Lo Lo Lo),Kizz Daniel,2022-05-03,183103,74,0.92,0.296,0.92,0.716,0.00222,0.104,-7.104,0.105,115.991,4,"afropop,azontobeats,nigerian pop"
+Overloading (OVERDOSE),Overloading (OVERDOSE),Mavins,2022-05-13,205000,71,0.546,0.484,0.546,0.611,0.00149,0.101,-9.459,0.172,104.059,4,"afro dancehall,afropop,azontobeats,nigerian pop"
+Bandana,Bandana,Fireboy DML,2022-07-13,178225,70,0.818,0.293,0.818,0.605,0.0116,0.0696,-7.121,0.038,104.931,4,afro dancehall
+Call Me Every Day (feat. WizKid),Call Me Every Day (feat. WizKid),Chris Brown,2022-06-17,146840,74,0.729,0.115,0.729,0.634,1.35e-05,0.0997,-7.194,0.175,171.862,4,"dance pop,pop,pop rap,r&b,rap"
+Finesse,Finesse,Pheelz,2022-03-03,151764,63,0.861,0.504,0.861,0.537,0.0,0.289,-8.199,0.159,102.014,4,"afropop,nigerian pop"
+i’m a mess,Boy Alone,Omah Lay,2022-07-15,153946,58,0.862,0.309,0.862,0.632,0.0256,0.112,-6.217,0.11,93.909,4,afro dancehall
+Begging,Begging,Yemi Alade,2022-07-22,135272,51,0.793,0.416,0.793,0.566,1.01e-05,0.212,-7.834,0.0561,110.035,4,"afro dancehall,afropop,azontobeats,nigerian pop"
+Sip (Alcohol),Sip (Alcohol),Joeboy,2021-09-24,158400,71,0.804,0.404,0.804,0.615,0.0,0.0987,-7.033,0.137,100.058,4,nigerian pop
+Peru,Peru,Fireboy DML,2021-12-23,187111,81,0.956,0.572,0.956,0.417,0.00071,0.0782,-7.892,0.0926,108.015,4,afro dancehall
+Calm Down,Calm Down,Rema,2022-02-11,219813,59,0.811,0.376,0.811,0.781,0.001,0.121,-6.333,0.0428,107.007,4,nigerian pop
+Understand,Understand,Omah Lay,2021-07-08,174545,58,0.695,0.178,0.695,0.646,0.216,0.0913,-7.291,0.103,99.983,4,afro dancehall
+Emiliana,Emiliana,CKay,2021-12-03,164848,36,0.738,0.638,0.738,0.549,0.402,0.111,-9.704,0.0513,98.965,4,afro r&b
+Woman,Woman,Omah Lay,2022-05-20,168742,57,0.862,0.406,0.862,0.597,0.0903,0.102,-5.679,0.327,103.983,4,afro dancehall
+Last Last,Last Last,Burna Boy,2022-05-12,172342,82,0.795,0.131,0.795,0.565,0.0,0.0802,-4.457,0.0948,87.925,4,"afro dancehall,dancehall,nigerian hip hop,nigerian pop"
+"Inhliziyo (feat. Nkosazana Daughter, Kabza De Small & DJ Maphorisa)","Inhliziyo (feat. Nkosazana Daughter, Kabza De Small & DJ Maphorisa)",Tyler ICU,2022-07-14,377433,54,0.833,0.00108,0.833,0.548,0.609,0.512,-13.986,0.0643,112.022,4,amapiano
+MAMA,MAMA,Pabi Cooper,2022-07-22,427732,45,0.598,0.0444,0.598,0.414,0.151,0.0217,-13.745,0.0667,111.25,4,amapiano
+Peace Be Unto You (PBUY),Peace Be Unto You (PBUY),Asake,2022-06-16,153103,69,0.808,0.101,0.808,0.769,4.12e-05,0.119,-7.207,0.0833,116.001,4,nigerian pop
+Holy Father,Holy Father,Mayorkun,2021-10-27,184000,62,0.784,0.301,0.784,0.865,0.000324,0.11,-5.679,0.155,115.96,4,"afropop,azontobeats,nigerian pop"
+Dada (feat. Davido) [Remix],Dada (feat. Davido) [Remix],Young Jonn,2022-04-28,177692,65,0.632,0.301,0.632,0.806,0.0,0.2,-5.771,0.155,139.124,3,"afropop,azontobeats,nigerian pop"
+Playboy,Playboy,Fireboy DML,2022-03-23,207474,71,0.555,0.334,0.555,0.674,1.28e-06,0.0586,-7.81,0.132,158.829,5,afro dancehall
+Ubumnandi (feat. Nia Pearl & MDU a.k.a TRP),KOA II Part 1,Kabza De Small,2022-06-16,384893,61,0.819,0.11,0.819,0.811,0.134,0.0552,-7.423,0.0427,111.982,4,"afro soul,amapiano"
+"WATAWI (feat. Davido, Focalistic & Abidoza)","WATAWI (feat. Davido, Focalistic & Abidoza)",CKay,2022-06-17,288849,66,0.849,0.627,0.849,0.528,0.115,0.111,-11.402,0.0538,112.986,4,afro r&b
+PALAZZO,PALAZZO,SPINALL,2022-05-13,186002,69,0.819,0.0534,0.819,0.659,0.0,0.0435,-9.024,0.0973,116.054,4,"afro dancehall,afropop,nigerian pop"
+Question (feat. Don Jazzy),Question (feat. Don Jazzy),Burna Boy,2021-08-24,168461,51,0.852,0.0938,0.852,0.525,0.000304,0.153,-9.363,0.0478,104.046,4,"afro dancehall,dancehall,nigerian hip hop,nigerian pop"
+Big Flexa,Big Flexa,Costa Titch,2021-12-03,327079,63,0.821,0.0131,0.821,0.611,0.00393,0.0395,-8.967,0.0535,113.006,4,south african trap
+Monalisa,Monalisa,Sarz,2022-05-19,212975,74,0.828,0.106,0.828,0.726,0.00101,0.103,-6.389,0.0419,113.017,4,"afropop,alte,nigerian pop"
+Many Man - A COLORS SHOW,Many Man - A COLORS SHOW,Victony,2022-06-30,190621,60,0.694,0.676,0.694,0.568,0.000159,0.338,-6.422,0.134,123.71,5,"azontobeats,nigerian pop"
+High,High,Adekunle Gold,2021-09-03,193758,64,0.802,0.106,0.802,0.864,0.00107,0.0408,-5.442,0.0386,115.997,4,"afropop,alte,azontobeats,nigerian hip hop,nigerian pop"
+Abo Mvelo (feat. Mellow & Sleazy & M.J),Abo Mvelo (feat. Mellow & Sleazy & M.J),Daliwonga,2022-03-18,480000,64,0.876,0.0172,0.876,0.507,0.00117,0.0746,-11.035,0.0482,112.003,4,"afro soul,south african pop"
+Certified Loner (No Competition),Certified Loner (No Competition),Mayorkun,2022-06-17,165000,65,0.931,0.0152,0.931,0.676,0.0,0.103,-7.492,0.0498,111.948,4,"afropop,azontobeats,nigerian pop"
+Legalize,Legalize,Mr Eazi,2022-06-10,146249,63,0.574,0.361,0.574,0.648,5.85e-05,0.266,-5.583,0.268,132.418,5,"afro dancehall,afropop,ghanaian hip hop,swedish dancehall"
+Amagents,Amagents,Samthing Soweto,2022-06-24,223669,58,0.684,0.0297,0.684,0.489,0.00207,0.086,-10.784,0.176,93.023,4,"afro soul,amapiano,south african alternative,south african pop,south african pop dance"
+Baddest Boy,Baddest Boy,Skiibii,2021-11-12,141599,59,0.876,0.605,0.876,0.388,0.176,0.11,-7.1,0.341,109.882,4,"afropop,nigerian pop"
+Kwaku the Traveller,Kwaku the Traveller,Black Sherif,2022-03-30,185364,69,0.64,0.0764,0.64,0.552,0.0,0.107,-7.327,0.354,135.241,4,ghanaian pop
+Big Thug Boys,Big Thug Boys,AV,2021-06-04,172690,7,0.861,0.39,0.861,0.721,0.00827,0.108,-4.473,0.133,108.105,4,nigerian pop
+Sinner,Sinner,Adekunle Gold,2021-07-09,174117,62,0.507,0.745,0.507,0.548,0.0,0.198,-6.509,0.38,136.041,5,"afropop,alte,azontobeats,nigerian hip hop,nigerian pop"
+Stand Strong (feat. Sunday Service Choir),Stand Strong (feat. Sunday Service Choir),Davido,2022-05-13,182791,64,0.474,0.379,0.474,0.691,1.55e-05,0.135,-5.026,0.098,94.622,4,"afropop,ghanaian hip hop,nigerian pop"
+Lie,Lie,Kizz Daniel,2021-08-05,156600,61,0.495,0.511,0.495,0.633,0.00337,0.0927,-6.675,0.294,201.726,4,"afropop,azontobeats,nigerian pop"
+Tanzania,Tanzania,Uncle Waffles,2022-03-16,376078,62,0.804,0.0552,0.804,0.654,0.00487,0.109,-10.125,0.0537,112.988,4,amapiano
+Bloody Samaritan,19 & Dangerous,Ayra Starr,2021-08-06,187000,67,0.796,0.036,0.796,0.719,0.0,0.0718,-7.018,0.138,105.027,4,nigerian pop
+Bounce,Bounce,Lexsil,2021-12-03,201247,65,0.717,0.728,0.717,0.835,0.013,0.141,-5.911,0.179,101.25,4,kenyan pop
+Jolene,Outlaw,Victony,2022-05-06,175000,60,0.67,0.36,0.67,0.683,0.0105,0.283,-6.122,0.0499,109.972,4,"azontobeats,nigerian pop"
+D O D O,Fleur froide - Second état : la cristallisation,Tayc,2021-11-19,179240,59,0.678,0.304,0.678,0.646,0.000405,0.154,-7.996,0.112,98.816,4,pop urbaine
+WITH YOU,WITH YOU,Khaid,2022-01-28,192475,59,0.644,0.556,0.644,0.707,0.0,0.112,-5.368,0.0701,67.322,5,nigerian pop
+Champion Sound,Champion Sound,Davido,2021-11-19,237876,61,0.861,0.0325,0.861,0.475,0.322,0.0708,-11.952,0.0537,113.016,4,"afropop,ghanaian hip hop,nigerian pop"
+Melody (feat. Jaywillz),First Of All,Diamond Platnumz,2022-03-11,169848,57,0.874,0.518,0.874,0.797,0.00402,0.108,-4.048,0.152,98.982,4,"azontobeats,bongo flava,tanzanian pop"

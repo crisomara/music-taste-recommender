@@ -1,0 +1,5 @@
+,precision_at_10,recall_at_10,catalog_coverage,mean_intra_list_diversity,n_users_evaluated
+popularity,0.0965,0.0011,0.0,1.0123,792.0
+content_only,0.0023,0.0,0.0093,0.0762,792.0
+collaborative_only,0.088,0.0013,0.0052,0.61,792.0
+hybrid,0.088,0.0013,0.0052,0.6101,792.0

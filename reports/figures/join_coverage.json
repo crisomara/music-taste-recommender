@@ -1,0 +1,8 @@
+{
+  "n_events": 13365803,
+  "n_matched_events": 1185414,
+  "event_coverage_pct": 8.87,
+  "n_unique_tracks_in_interactions": 740932,
+  "n_matched_unique_tracks": 9544,
+  "unique_track_coverage_pct": 1.29
+}

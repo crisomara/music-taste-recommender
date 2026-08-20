@@ -1,0 +1,11 @@
+pandas
+numpy
+scikit-learn
+implicit
+umap-learn
+matplotlib
+seaborn
+jupyter
+pyarrow
+datasets
+huggingface_hub

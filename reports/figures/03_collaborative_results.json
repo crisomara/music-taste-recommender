@@ -1,0 +1,12 @@
+{
+  "popularity_baseline": {
+    "precision_at_k": 0.09646464646464648,
+    "recall_at_k": 0.0010615215019801434,
+    "n_users_evaluated": 792
+  },
+  "als_collaborative": {
+    "precision_at_k": 0.0880050505050505,
+    "recall_at_k": 0.0012618494500096827,
+    "n_users_evaluated": 792
+  }
+}
