@@ -166,18 +166,28 @@ st.markdown(
 moods = ["All moods"] + sorted(tracks["mood"].unique())
 mood = st.selectbox("Mood / style", moods)
 
-pool = tracks if mood == "All moods" else tracks[tracks["mood"] == mood]
+mood_pool = tracks if mood == "All moods" else tracks[tracks["mood"] == mood]
+
+artists = ["All artists"] + sorted(mood_pool["artists"].unique())
+artist = st.selectbox(
+    "Artist", artists,
+    help="Start typing to search — stays selected while you pick a song below.",
+)
+
+pool = mood_pool if artist == "All artists" else mood_pool[mood_pool["artists"] == artist]
 options = {
+    row.track_name: row.track_id for row in pool.sort_values("track_name").itertuples()
+} if artist != "All artists" else {
     f"{row.track_name} — {row.artists}": row.track_id
     for row in pool.sort_values("track_name").itertuples()
 }
 
 if not options:
-    st.warning("No tracks found for that mood.")
+    st.warning("No tracks found for that combination.")
 else:
     label = st.selectbox(
-        "Song or artist", sorted(options.keys()),
-        help="Start typing to search within the selected mood.",
+        "Song", sorted(options.keys()),
+        help="Start typing to search.",
     )
     seed_track_id = options[label]
     seed_row = tracks.set_index("track_id").loc[seed_track_id]
