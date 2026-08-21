@@ -147,10 +147,24 @@ st.markdown(
 )
 
 
+REQUIRED_COLUMNS = {"track_id", "track_name", "artists", "primary_artist", "mood", *FEATURES}
+
+
 @st.cache_resource
 def load_state():
     interactions_dir = ensure_artifacts([LARGE_CATALOG_FILE])
-    tracks = pd.read_parquet(interactions_dir / LARGE_CATALOG_FILE)
+    catalog_path = interactions_dir / LARGE_CATALOG_FILE
+    tracks = pd.read_parquet(catalog_path)
+
+    if not REQUIRED_COLUMNS.issubset(tracks.columns):
+        # A previous deploy's copy of this file can survive a redeploy (Streamlit
+        # Cloud's filesystem persists outside git-tracked paths), so a schema change
+        # here silently serves stale data instead of the current build's version.
+        # Delete it and force a fresh download from Hugging Face Hub.
+        catalog_path.unlink()
+        interactions_dir = ensure_artifacts([LARGE_CATALOG_FILE])
+        tracks = pd.read_parquet(interactions_dir / LARGE_CATALOG_FILE)
+
     scaler = StandardScaler()
     feature_matrix = scaler.fit_transform(tracks[FEATURES])
     idx_lookup = {tid: i for i, tid in enumerate(tracks["track_id"])}
