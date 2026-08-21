@@ -44,7 +44,7 @@ was actually run and verified during that retrofit, not marked aspirationally.
 ## 7. Recruiter-Scan Signals
 - [x] README is understandable in 30 seconds
 - [x] Commit history reads as polished work — retrofit committed with a clear, scoped message and pushed
-- [ ] Live deployment link (Streamlit Community Cloud) — pending: needs the user's own one-click "connect repo" step on streamlit.io, tied to their account
+- [ ] Live deployment link (Streamlit Community Cloud) — app is deployed and linked in the README, but an anonymous fetch of the URL still redirects to Streamlit's login page as of 2026-08-21, suggesting viewer access may still be restricted rather than public. Needs the user to confirm it loads for a logged-out visitor before this counts as done.
 - [x] Architecture diagram a non-technical reviewer can follow
 
 ## 8. Elevation Pass

@@ -9,7 +9,7 @@ need to know what people actually did?
 
 📊 **[Read the presentation](reports/presentation.html)** — plain-language walkthrough with charts, built for a non-technical audience
 📄 **[Read the technical case study](reports/case_study.md)** — full methodology, every number sourced to a notebook cell
-🚀 **[Try the live demo](#)** — pick a real listener or a seed track, see real recommendations (link added once deployed — see [Deployment](#deployment))
+🚀 **[Try the live demo](https://music-taste-recommender-lryc4l3hnfqbmjwfqhmnne.streamlit.app/)** — pick a genre, type a song or artist, see real audio-feature-similar tracks
 
 ## Architecture
 
@@ -198,9 +198,14 @@ training, not serving.
 
 The FastAPI service is verified locally and via Docker (see above); it isn't hosted
 24/7, since the Streamlit demo is the recruiter-facing artifact that needs to actually
-be live. The Streamlit app deploys for free via
-[Streamlit Community Cloud](https://streamlit.io/cloud), connected directly to this
-GitHub repo — `app/streamlit_app.py` as the entry point, `requirements.txt` as-is.
+be live. The Streamlit app is deployed for free on
+[Streamlit Community Cloud](https://streamlit.io/cloud) at
+**[music-taste-recommender-lryc4l3hnfqbmjwfqhmnne.streamlit.app](https://music-taste-recommender-lryc4l3hnfqbmjwfqhmnne.streamlit.app/)**,
+connected directly to this GitHub repo (`app/streamlit_app.py` as the entry point).
+The live demo is intentionally scoped to one thing — pick a genre, then a song or
+artist, and see audio-feature-similar tracks — rather than exposing both recommenders;
+the full hybrid recommender (collaborative + content-based) is still available by
+running the FastAPI service locally (see above) or the notebooks.
 
 ## License
 
