@@ -9,7 +9,7 @@ need to know what people actually did?
 
 📊 **[Read the presentation](reports/presentation.html)** — plain-language walkthrough with charts, built for a non-technical audience
 📄 **[Read the technical case study](reports/case_study.md)** — full methodology, every number sourced to a notebook cell
-🚀 **[Try the live demo](https://music-taste-recommender-lryc4l3hnfqbmjwfqhmnne.streamlit.app/)** — pick a genre, type a song or artist, see real audio-feature-similar tracks
+🚀 **[Try the live demo](https://music-taste-recommender-lryc4l3hnfqbmjwfqhmnne.streamlit.app/)** — pick a mood, type a song or artist, see real audio-feature-similar tracks across 1.1M+ songs
 
 ## Architecture
 
@@ -124,6 +124,20 @@ what "done" would actually mean beyond this repo.
   but is no longer publicly downloadable (Spotify pulled it from AIcrowd; access now
   requires contacting Spotify Research directly) — LastFM-1K substituted instead, same
   track-level granularity.
+- **Demo-only catalog** (1.12M tracks, `rodolfofigueroa/spotify-12m-songs` on Kaggle) —
+  used *only* by `app/streamlit_app.py`, not by the notebooks, the case study, or the
+  FastAPI service, all of which stay on the 114k-track dataset above (that's what the
+  published results are based on). The live demo's original 114k catalog felt too
+  narrow for a general-purpose search, and Spotify's own `/audio-features` API endpoint
+  was deprecated for new apps in Nov 2024 — there's no legitimate way to fetch audio
+  features for an arbitrary real song on demand anymore — so the fix is a much bigger
+  static catalog instead of a live one. This dataset has no genre labels, so tracks are
+  grouped by their own standardized audio features (`StandardScaler` + `KMeans`, k=9)
+  into mood/style clusters instead, auto-labeled from each cluster's distinguishing
+  traits (e.g. "Energetic & Loud," "Acoustic & Mellow") — see
+  `scripts/build_large_catalog.py`. Built once locally and hosted on Hugging Face Hub
+  (`large_catalog.parquet`, alongside the ALS model) rather than requiring Kaggle
+  credentials at deploy time.
 
 ## Structure
 ```
@@ -140,6 +154,7 @@ app/
   streamlit_app.py          # interactive demo (Streamlit Community Cloud)
 scripts/
   train_als_with_mlflow.py  # MLflow-tracked rerun of notebook 03's training
+  build_large_catalog.py    # builds the demo app's 1.1M-track catalog (run once, uploaded to HF Hub)
 reports/
   presentation.html         # business-facing walkthrough with charts
   case_study.md             # full technical writeup
@@ -202,10 +217,10 @@ be live. The Streamlit app is deployed for free on
 [Streamlit Community Cloud](https://streamlit.io/cloud) at
 **[music-taste-recommender-lryc4l3hnfqbmjwfqhmnne.streamlit.app](https://music-taste-recommender-lryc4l3hnfqbmjwfqhmnne.streamlit.app/)**,
 connected directly to this GitHub repo (`app/streamlit_app.py` as the entry point).
-The live demo is intentionally scoped to one thing — pick a genre, then a song or
-artist, and see audio-feature-similar tracks — rather than exposing both recommenders;
-the full hybrid recommender (collaborative + content-based) is still available by
-running the FastAPI service locally (see above) or the notebooks.
+The live demo is intentionally scoped to one thing — pick a mood, then a song or
+artist, and see audio-feature-similar tracks across a 1.1M-track catalog — rather than
+exposing both recommenders; the full hybrid recommender (collaborative + content-based)
+is still available by running the FastAPI service locally (see above) or the notebooks.
 
 ## License
 

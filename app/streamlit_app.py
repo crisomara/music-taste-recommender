@@ -1,25 +1,40 @@
 """Streamlit demo: find tracks that sound like a given song.
 
-Single-purpose by design — pick a genre to narrow the search, then type a song or
-artist name to find audio-feature-similar tracks. Imports src/ directly rather than
-calling api/ over HTTP — see README's Architecture section for why (Streamlit
-Community Cloud reliably hosts one process; chaining it to a separately-hosted API
-adds a second point of failure for no portfolio benefit, and both artifacts are
-independently real).
+Single-purpose by design — pick a mood/style group to narrow the search, then type a
+song or artist name to find audio-feature-similar tracks, searched across a 1.2M-track
+catalog (see scripts/build_large_catalog.py for how it was built). Genre labels aren't
+available at this scale, so tracks are grouped by their own audio-feature clusters
+instead — arguably more informative than a genre tag anyway, since it reflects what a
+song actually sounds like rather than how it's marketed.
+
+Imports src/ directly rather than calling api/ over HTTP — see README's Architecture
+section for why (Streamlit Community Cloud reliably hosts one process; chaining it to
+a separately-hosted API adds a second point of failure for no portfolio benefit, and
+both artifacts are independently real). Note: this app uses its own larger catalog,
+separate from src/data_loading.py's 114k-track dataset that the notebooks, case study,
+and FastAPI service are built on — see README's Architecture section.
 """
 from __future__ import annotations
 
 import sys
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 import streamlit as st
+from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import StandardScaler
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.artifacts import ensure_artifacts
-from src.content_based import ContentBasedRecommender
-from src.data_loading import load_spotify_tracks
+from src.artifacts import LARGE_CATALOG_FILE, ensure_artifacts
+
+FEATURES = [
+    "danceability", "energy", "key", "loudness", "mode", "speechiness",
+    "acousticness", "instrumentalness", "liveness", "valence", "tempo",
+    "time_signature",
+]
 
 st.set_page_config(page_title="Music Taste Recommender", page_icon="🎧", layout="centered")
 
@@ -113,37 +128,56 @@ st.markdown(
 
 @st.cache_resource
 def load_state():
-    ensure_artifacts()
-    tracks = load_spotify_tracks()
-    cbr = ContentBasedRecommender(tracks)
-    return tracks, cbr
+    interactions_dir = ensure_artifacts([LARGE_CATALOG_FILE])
+    tracks = pd.read_parquet(interactions_dir / LARGE_CATALOG_FILE)
+    scaler = StandardScaler()
+    feature_matrix = scaler.fit_transform(tracks[FEATURES])
+    idx_lookup = {tid: i for i, tid in enumerate(tracks["track_id"])}
+    return tracks, feature_matrix, idx_lookup
 
 
-tracks, cbr = load_state()
+def similar_to(track_id: str, tracks: pd.DataFrame, feature_matrix: np.ndarray, idx_lookup: dict, k: int = 10):
+    idx = idx_lookup.get(track_id)
+    if idx is None:
+        return []
+    sims = cosine_similarity(feature_matrix[idx : idx + 1], feature_matrix)[0]
+    order = np.argsort(-sims)
+    results = []
+    for i in order:
+        if i == idx:
+            continue
+        results.append((tracks.iloc[i]["track_id"], float(sims[i])))
+        if len(results) >= k:
+            break
+    return results
+
+
+tracks, feature_matrix, idx_lookup = load_state()
 
 st.markdown('<div class="app-title">🎧 Find similar tracks</div>', unsafe_allow_html=True)
 st.markdown(
-    '<div class="app-subtitle">Pick a genre, then type a song or artist to find tracks '
-    'that sound alike — matched on real audio features (tempo, energy, mood, and more) '
-    f'across {len(tracks):,} songs, not just genre tags.</div>',
+    '<div class="app-subtitle">Pick a mood or style, then type a song or artist to find '
+    'tracks that sound alike — matched on real audio features (tempo, energy, mood, and '
+    f'more) across {len(tracks):,} songs. No genre tags here — groups are built from '
+    'what each song actually sounds like, not how it\'s marketed.</div>',
     unsafe_allow_html=True,
 )
 
-genres = ["All genres"] + sorted(tracks["track_genre"].unique())
-genre = st.selectbox("Genre", genres)
+moods = ["All moods"] + sorted(tracks["mood"].unique())
+mood = st.selectbox("Mood / style", moods)
 
-pool = tracks if genre == "All genres" else tracks[tracks["track_genre"] == genre]
+pool = tracks if mood == "All moods" else tracks[tracks["mood"] == mood]
 options = {
     f"{row.track_name} — {row.artists}": row.track_id
     for row in pool.sort_values("track_name").itertuples()
 }
 
 if not options:
-    st.warning("No tracks found for that genre.")
+    st.warning("No tracks found for that mood.")
 else:
     label = st.selectbox(
         "Song or artist", sorted(options.keys()),
-        help="Start typing to search within the selected genre.",
+        help="Start typing to search within the selected mood.",
     )
     seed_track_id = options[label]
     seed_row = tracks.set_index("track_id").loc[seed_track_id]
@@ -154,7 +188,7 @@ else:
         unsafe_allow_html=True,
     )
 
-    results = cbr.similar_to(seed_track_id, k=10)
+    results = similar_to(seed_track_id, tracks, feature_matrix, idx_lookup, k=10)
     track_lookup = tracks.set_index("track_id")
 
     if not results:

@@ -11,13 +11,16 @@ INTERACTIONS_DIR = PROJECT_ROOT / "data" / "raw" / "interactions"
 
 HF_REPO_ID = "ChrisOmara/music-taste-recommender-artifacts"
 ARTIFACT_FILES = ["als_model.pkl", "joined_train.parquet"]
+LARGE_CATALOG_FILE = "large_catalog.parquet"
 
 
-def ensure_artifacts() -> Path:
-    """Returns INTERACTIONS_DIR with als_model.pkl and joined_train.parquet guaranteed
-    present, downloading any missing ones from Hugging Face Hub."""
+def ensure_artifacts(filenames: list[str] | None = None) -> Path:
+    """Returns INTERACTIONS_DIR with the given files guaranteed present (default:
+    als_model.pkl + joined_train.parquet), downloading any missing ones from Hugging
+    Face Hub. Pass filenames=[LARGE_CATALOG_FILE] for the demo app's larger catalog."""
+    filenames = filenames if filenames is not None else ARTIFACT_FILES
     INTERACTIONS_DIR.mkdir(parents=True, exist_ok=True)
-    missing = [f for f in ARTIFACT_FILES if not (INTERACTIONS_DIR / f).exists()]
+    missing = [f for f in filenames if not (INTERACTIONS_DIR / f).exists()]
     if not missing:
         return INTERACTIONS_DIR
 
