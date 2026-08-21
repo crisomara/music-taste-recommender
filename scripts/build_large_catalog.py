@@ -48,16 +48,25 @@ DESCRIPTIVE_FEATURES = {
 }
 
 
-def parse_artists(raw: str) -> str:
+def parse_artists(raw: str) -> tuple[str, str]:
     """The Kaggle dataset stores `artists` as a Python-list repr string, e.g.
-    "['Rage Against The Machine']" — parse it into a plain display string."""
+    "['Rage Against The Machine']" or "['Loquillo', 'Nu Niles']" for a collaboration.
+
+    Returns (display_string, primary_artist). display_string joins every credited
+    artist (for showing on a track), primary_artist is just the first credited name
+    (for the Artist filter/dropdown) — using the full joined string as the filter key
+    made a solo artist and every collaboration they're credited on show up as separate,
+    unrelated dropdown entries. Both are stripped of stray whitespace.
+    """
     try:
         artists = ast.literal_eval(raw)
         if isinstance(artists, list) and artists:
-            return ", ".join(artists)
+            cleaned = [a.strip() for a in artists if isinstance(a, str) and a.strip()]
+            if cleaned:
+                return ", ".join(cleaned), cleaned[0]
     except (ValueError, SyntaxError):
         pass
-    return str(raw)
+    return "", ""
 
 
 def label_cluster(centroid: pd.Series, global_mean: pd.Series, global_std: pd.Series, n_words: int = 2) -> str:
@@ -88,10 +97,19 @@ def main() -> None:
         usecols=["id", "name", "artists"] + FEATURES,
     )
     df = df.rename(columns={"id": "track_id", "name": "track_name"})
-    df["artists"] = df["artists"].map(parse_artists)
-    df = df.dropna(subset=["track_name", "artists"])
+    parsed = df["artists"].map(parse_artists)
+    df["artists"] = parsed.map(lambda p: p[0])
+    df["primary_artist"] = parsed.map(lambda p: p[1])
+    df["track_name"] = df["track_name"].astype(str).str.strip()
 
-    print(f"Loaded {len(df):,} raw rows. Deduplicating...")
+    df = df.dropna(subset=["track_name"])
+    before_junk_filter = len(df)
+    df = df[
+        (df["track_name"] != "") & (df["primary_artist"] != "") & (df["artists"] != "")
+    ]
+    print(f"Dropped {before_junk_filter - len(df):,} rows with empty/unparseable track or artist names.")
+
+    print(f"{len(df):,} rows remaining. Deduplicating...")
     df["join_key"] = [
         join_key(a, t) for a, t in zip(df["artists"], df["track_name"])
     ]
@@ -114,14 +132,27 @@ def main() -> None:
         cid: label_cluster(centroid, global_mean, global_std) for cid, centroid in centroids.items()
     }
 
-    # Disambiguate collisions (different clusters sharing a top-2 pair) by adding a
-    # 3rd distinguishing word instead of a numeric suffix.
-    label_counts: dict[str, int] = {}
-    for label in cluster_labels.values():
-        label_counts[label] = label_counts.get(label, 0) + 1
-    for cid, label in list(cluster_labels.items()):
-        if label_counts[label] > 1:
-            cluster_labels[cid] = label_cluster(centroids[cid], global_mean, global_std, n_words=3)
+    # Disambiguate collisions (different clusters landing on the same word combo) by
+    # adding one more distinguishing word at a time, up to every descriptive feature,
+    # rather than escalating exactly once and leaving any remaining collision unresolved.
+    for n_words in range(3, len(DESCRIPTIVE_FEATURES) + 1):
+        label_counts: dict[str, int] = {}
+        for label in cluster_labels.values():
+            label_counts[label] = label_counts.get(label, 0) + 1
+        collisions = [cid for cid, label in cluster_labels.items() if label_counts[label] > 1]
+        if not collisions:
+            break
+        for cid in collisions:
+            cluster_labels[cid] = label_cluster(centroids[cid], global_mean, global_std, n_words=n_words)
+    else:
+        # Exhausted every descriptive feature and still colliding (would require
+        # near-identical centroids) — fall back to a numeric suffix so labels stay
+        # unique rather than silently duplicated.
+        label_counts = {}
+        for cid, label in list(cluster_labels.items()):
+            label_counts[label] = label_counts.get(label, 0) + 1
+            if label_counts[label] > 1:
+                cluster_labels[cid] = f"{label} ({label_counts[label]})"
 
     df["mood"] = df["cluster_id"].map(cluster_labels)
 

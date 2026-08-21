@@ -205,13 +205,13 @@ mood = st.selectbox("Mood / style", moods)
 
 mood_pool = tracks if mood == "All moods" else tracks[tracks["mood"] == mood]
 
-artists = ["All artists"] + sorted(mood_pool["artists"].unique())
+artists = ["All artists"] + sorted(mood_pool["primary_artist"].unique(), key=str.casefold)
 artist = st.selectbox(
     "Artist", artists,
     help="Start typing to search — stays selected while you pick a song below.",
 )
 
-pool = mood_pool if artist == "All artists" else mood_pool[mood_pool["artists"] == artist]
+pool = mood_pool if artist == "All artists" else mood_pool[mood_pool["primary_artist"] == artist]
 
 if pool.empty:
     st.warning("No tracks found for that combination.")
