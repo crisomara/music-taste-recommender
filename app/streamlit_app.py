@@ -175,49 +175,98 @@ artist = st.selectbox(
 )
 
 pool = mood_pool if artist == "All artists" else mood_pool[mood_pool["artists"] == artist]
-options = {
-    row.track_name: row.track_id for row in pool.sort_values("track_name").itertuples()
-} if artist != "All artists" else {
-    f"{row.track_name} — {row.artists}": row.track_id
-    for row in pool.sort_values("track_name").itertuples()
-}
 
-if not options:
+if pool.empty:
     st.warning("No tracks found for that combination.")
 else:
-    label = st.selectbox(
-        "Song", sorted(options.keys()),
-        help="Start typing to search.",
+    if "seed_track_id" not in st.session_state:
+        st.session_state.seed_track_id = None
+
+    # A clicked suggestion is applied here, *before* the text_input widget below is
+    # instantiated — session_state for a widget's key can only be set before that
+    # widget is created in a given run, not after.
+    pending = st.session_state.pop("_pending_pick", None)
+    if pending is not None:
+        st.session_state.seed_track_id = pending[0]
+        st.session_state.song_query = pending[1]
+
+    query = st.text_input(
+        "Song",
+        key="song_query",
+        placeholder="Start typing a song or artist name…",
     )
-    seed_track_id = options[label]
-    seed_row = tracks.set_index("track_id").loc[seed_track_id]
 
-    st.markdown(
-        f'<div class="seed-banner">Finding songs that sound like '
-        f'<b>{seed_row.track_name}</b> by {seed_row.artists}</div>',
-        unsafe_allow_html=True,
-    )
+    def pick(track_id: str, display: str) -> None:
+        st.session_state._pending_pick = (track_id, display)
 
-    results = similar_to(seed_track_id, tracks, feature_matrix, idx_lookup, k=10)
-    track_lookup = tracks.set_index("track_id")
+    if query.strip():
+        q = query.strip().lower()
+        name_match = pool["track_name"].str.lower().str.contains(q, na=False, regex=False)
+        artist_match = pool["artists"].str.lower().str.contains(q, na=False, regex=False)
+        suggestions = pool[name_match | artist_match].head(8)
 
-    if not results:
-        st.info("No similar tracks found for this song.")
-    else:
-        cards = []
-        for i, (tid, sim) in enumerate(results, start=1):
-            row = track_lookup.loc[tid]
-            cards.append(
-                f'<div class="track-card">'
-                f'<div class="rank">{i:02d}</div>'
-                f'<div class="info">'
-                f'<div class="track-name">{row.track_name}</div>'
-                f'<div class="artist">{row.artists}</div>'
-                f'</div>'
-                f'<div class="similarity">{sim:.0%}</div>'
-                f'</div>'
-            )
-        st.markdown("".join(cards), unsafe_allow_html=True)
+        if not suggestions.empty:
+            st.caption("Suggestions — click one, or keep typing and press the button below")
+            for row in suggestions.itertuples():
+                display = f"{row.track_name} — {row.artists}"
+                if st.button(display, key=f"suggest_{row.track_id}", use_container_width=True):
+                    pick(row.track_id, display)
+                    st.rerun()
+
+    if st.button("🔍 Find similar tracks", type="primary"):
+        resolved_id = st.session_state.seed_track_id
+        # If the text was edited after a suggestion was picked (or never picked at
+        # all), resolve the current free-typed text to the closest match instead.
+        current_label = None
+        if resolved_id is not None:
+            row = tracks.set_index("track_id").loc[resolved_id]
+            current_label = f"{row.track_name} — {row.artists}"
+        if query.strip() and query.strip() != current_label:
+            q = query.strip().lower()
+            exact = pool[pool["track_name"].str.lower() == q]
+            starts = pool[pool["track_name"].str.lower().str.startswith(q, na=False)]
+            contains = pool[
+                pool["track_name"].str.lower().str.contains(q, na=False, regex=False)
+                | pool["artists"].str.lower().str.contains(q, na=False, regex=False)
+            ]
+            best = next((m for m in (exact, starts, contains) if not m.empty), None)
+            resolved_id = best.iloc[0]["track_id"] if best is not None else None
+
+        if resolved_id is None:
+            st.warning("Couldn't find a matching song — try a suggestion or a different search.")
+        else:
+            st.session_state.seed_track_id = resolved_id
+
+    seed_track_id = st.session_state.seed_track_id
+    if seed_track_id is not None:
+        seed_row = tracks.set_index("track_id").loc[seed_track_id]
+
+        st.markdown(
+            f'<div class="seed-banner">Finding songs that sound like '
+            f'<b>{seed_row.track_name}</b> by {seed_row.artists}</div>',
+            unsafe_allow_html=True,
+        )
+
+        results = similar_to(seed_track_id, tracks, feature_matrix, idx_lookup, k=10)
+        track_lookup = tracks.set_index("track_id")
+
+        if not results:
+            st.info("No similar tracks found for this song.")
+        else:
+            cards = []
+            for i, (tid, sim) in enumerate(results, start=1):
+                row = track_lookup.loc[tid]
+                cards.append(
+                    f'<div class="track-card">'
+                    f'<div class="rank">{i:02d}</div>'
+                    f'<div class="info">'
+                    f'<div class="track-name">{row.track_name}</div>'
+                    f'<div class="artist">{row.artists}</div>'
+                    f'</div>'
+                    f'<div class="similarity">{sim:.0%}</div>'
+                    f'</div>'
+                )
+            st.markdown("".join(cards), unsafe_allow_html=True)
 
 st.markdown(
     '<div class="footer-note">Source: '
