@@ -16,8 +16,14 @@ AUDIO_FEATURES = [
 
 
 def load_spotify_tracks() -> pd.DataFrame:
-    """Load the 114k-track Spotify Tracks Dataset, deduplicated on (artist, track)."""
-    df = pd.read_csv(SPOTIFY_TRACKS_CSV, index_col=0)
+    """Load the 114k-track Spotify Tracks Dataset, deduplicated on (artist, track).
+
+    A handful of rows in the raw CSV have stray Latin-1 bytes mixed into an otherwise
+    UTF-8 file (e.g. a raw 0xE1 for "á" instead of the proper 2-byte UTF-8 sequence) —
+    a real quirk in the source data, not a parsing bug. encoding_errors="replace" keeps
+    those few rows loadable (as "�") rather than crashing the whole 114k-row read.
+    """
+    df = pd.read_csv(SPOTIFY_TRACKS_CSV, index_col=0, encoding_errors="replace")
     df["primary_artist"] = df["artists"].map(primary_artist)
     df["join_key"] = [
         join_key(a, t) for a, t in zip(df["primary_artist"], df["track_name"])

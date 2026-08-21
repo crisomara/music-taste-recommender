@@ -9,3 +9,8 @@ jupyter
 pyarrow
 datasets
 huggingface_hub
+fastapi
+uvicorn[standard]
+streamlit
+mlflow>=2.9
+python-dotenv

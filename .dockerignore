@@ -1,0 +1,10 @@
+.venv/
+data/raw/interactions/
+notebooks/
+reports/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.git/
+mlruns/
+.env
