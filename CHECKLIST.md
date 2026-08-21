@@ -43,7 +43,7 @@ was actually run and verified during that retrofit, not marked aspirationally.
 
 ## 7. Recruiter-Scan Signals
 - [x] README is understandable in 30 seconds
-- [ ] Commit history reads as polished work — pending: this retrofit's changes need a clean commit
+- [x] Commit history reads as polished work — retrofit committed with a clear, scoped message and pushed
 - [ ] Live deployment link (Streamlit Community Cloud) — pending: needs the user's own one-click "connect repo" step on streamlit.io, tied to their account
 - [x] Architecture diagram a non-technical reviewer can follow
 
