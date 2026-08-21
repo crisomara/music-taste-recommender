@@ -36,6 +36,21 @@ FEATURES = [
     "time_signature",
 ]
 
+# key/mode/time_signature are structural/categorical (a shared value doesn't mean two
+# songs "feel" similar the way a shared tempo or energy does), so they're excluded from
+# the human-facing "why this match" explanation, same reasoning as
+# scripts/build_large_catalog.py's DESCRIPTIVE_FEATURES.
+EXPLAINABLE_FEATURES = [
+    "tempo", "energy", "loudness", "danceability", "acousticness",
+    "valence", "instrumentalness", "speechiness", "liveness",
+]
+FEATURE_LABELS = {
+    "tempo": "Tempo", "energy": "Energy", "loudness": "Loudness",
+    "danceability": "Danceability", "acousticness": "Acoustic quality",
+    "valence": "Mood", "instrumentalness": "Instrumental balance",
+    "speechiness": "Vocal presence", "liveness": "Live-performance feel",
+}
+
 st.set_page_config(page_title="Music Taste Recommender", page_icon="🎧", layout="centered")
 
 st.markdown(
@@ -106,6 +121,12 @@ st.markdown(
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .track-card .why-match {
+    color: #3E7C74;
+    font-size: 0.78rem;
+    margin-top: 0.2rem;
+    letter-spacing: 0.01em;
+  }
   .track-card .similarity {
     font-family: 'Fraunces', serif;
     font-weight: 600;
@@ -134,6 +155,22 @@ def load_state():
     feature_matrix = scaler.fit_transform(tracks[FEATURES])
     idx_lookup = {tid: i for i, tid in enumerate(tracks["track_id"])}
     return tracks, feature_matrix, idx_lookup
+
+
+FEATURE_COL_INDEX = {name: i for i, name in enumerate(FEATURES)}
+
+
+def explain_match(seed_idx: int, other_idx: int, feature_matrix: np.ndarray, n: int = 2) -> list[str]:
+    """Returns up to n human-readable feature names that most drove the similarity
+    (smallest standardized difference) — same rationale as
+    src/content_based.py's ContentBasedRecommender.explain(), adapted for this app's
+    own feature matrix."""
+    diffs = {
+        feat: abs(feature_matrix[seed_idx, FEATURE_COL_INDEX[feat]] - feature_matrix[other_idx, FEATURE_COL_INDEX[feat]])
+        for feat in EXPLAINABLE_FEATURES
+    }
+    ranked = sorted(diffs.items(), key=lambda kv: kv[1])
+    return [FEATURE_LABELS[feat] for feat, _ in ranked[:n]]
 
 
 def similar_to(track_id: str, tracks: pd.DataFrame, feature_matrix: np.ndarray, idx_lookup: dict, k: int = 10):
@@ -253,15 +290,18 @@ else:
         if not results:
             st.info("No similar tracks found for this song.")
         else:
+            seed_idx = idx_lookup[seed_track_id]
             cards = []
             for i, (tid, sim) in enumerate(results, start=1):
                 row = track_lookup.loc[tid]
+                why = explain_match(seed_idx, idx_lookup[tid], feature_matrix)
                 cards.append(
                     f'<div class="track-card">'
                     f'<div class="rank">{i:02d}</div>'
                     f'<div class="info">'
                     f'<div class="track-name">{row.track_name}</div>'
                     f'<div class="artist">{row.artists}</div>'
+                    f'<div class="why-match">Matched on {" &amp; ".join(why)}</div>'
                     f'</div>'
                     f'<div class="similarity">{sim:.0%}</div>'
                     f'</div>'
