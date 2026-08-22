@@ -16,6 +16,7 @@ and FastAPI service are built on — see README's Architecture section.
 """
 from __future__ import annotations
 
+import hashlib
 import sys
 from pathlib import Path
 
@@ -57,90 +58,186 @@ st.markdown(
     """
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-  html, body, [class*="css"] { font-family: 'Inter', -apple-system, sans-serif; }
+  html, body, [class*="css"] { font-family: 'Manrope', -apple-system, sans-serif; }
 
-  h1, h2, h3, .app-title { font-family: 'Fraunces', Georgia, serif !important; }
+  /* App chrome: pin Streamlit's own frame to the same near-black surface so there's
+     no light-gray gutter around the themed content. */
+  .stApp, [data-testid="stHeader"] { background: #121212; }
+  .block-container { padding-top: 2.5rem; max-width: 780px; }
+
+  h1, h2, h3, .app-title { font-family: 'Poppins', 'Manrope', sans-serif !important; }
 
   .app-title {
-    font-size: 2.4rem;
-    font-weight: 600;
-    color: #1B1D1B;
-    margin-bottom: 0.1rem;
-    letter-spacing: -0.01em;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin-bottom: 0.15rem;
+    letter-spacing: -0.02em;
   }
   .app-subtitle {
-    color: #5B5F58;
-    font-size: 1.02rem;
-    margin-bottom: 1.8rem;
-    max-width: 60ch;
+    color: #B3B3B3;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+    max-width: 62ch;
+  }
+
+  /* Widget labels ("Mood / style", "Artist") as small caps section headers. */
+  [data-testid="stWidgetLabel"] p {
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #B3B3B3;
+  }
+
+  /* Selects, text input: rounded dark surfaces instead of Streamlit's default boxes. */
+  [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+  [data-testid="stTextInput"] input {
+    background-color: #1F1F1F !important;
+    border: 1px solid #2A2A2A !important;
+    border-radius: 8px !important;
+    color: #FFFFFF !important;
+  }
+  [data-testid="stTextInput"] input::placeholder { color: #6A6A6A; }
+
+  /* Primary submit button ("Find similar tracks") as a Spotify-style pill. */
+  [data-testid="stFormSubmitButton"] button,
+  [data-testid="baseButton-primary"] {
+    background-color: #1DB954 !important;
+    color: #000000 !important;
+    border: none !important;
+    border-radius: 500px !important;
+    font-weight: 700 !important;
+    padding: 0.55rem 1.6rem !important;
+    transition: transform 0.1s ease, background-color 0.15s ease;
+  }
+  [data-testid="stFormSubmitButton"] button:hover,
+  [data-testid="baseButton-primary"]:hover {
+    background-color: #1ED760 !important;
+    transform: scale(1.02);
+  }
+
+  /* Suggestion buttons: quiet dark rows that light up on hover. */
+  [data-testid="baseButton-secondary"] {
+    background-color: #181818 !important;
+    color: #E0E0E0 !important;
+    border: 1px solid #2A2A2A !important;
+    border-radius: 6px !important;
+    text-align: left !important;
+    justify-content: flex-start !important;
+  }
+  [data-testid="baseButton-secondary"]:hover {
+    background-color: #282828 !important;
+    border-color: #3A3A3A !important;
+    color: #FFFFFF !important;
   }
 
   .seed-banner {
-    background: #E7EAE3;
-    border-left: 3px solid #3E7C74;
-    border-radius: 6px;
-    padding: 0.9rem 1.2rem;
-    margin: 1.2rem 0 1.6rem;
-    font-size: 0.95rem;
-    color: #1B1D1B;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    background: linear-gradient(90deg, #1a2e22, #181818 65%);
+    border-left: 3px solid #1DB954;
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin: 1.3rem 0 1.8rem;
+    font-size: 0.92rem;
+    color: #E0E0E0;
   }
-  .seed-banner b { color: #B5652A; }
+  .seed-banner .eyebrow {
+    display: block;
+    text-transform: uppercase;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #1DB954;
+    margin-bottom: 0.2rem;
+  }
+  .seed-banner b { color: #FFFFFF; }
 
   .track-card {
     display: flex;
     align-items: center;
     gap: 1rem;
-    background: #E7EAE3;
+    background: #181818;
+    border: 1px solid transparent;
     border-radius: 8px;
-    padding: 0.85rem 1.1rem;
-    margin-bottom: 0.6rem;
+    padding: 0.75rem 1.1rem;
+    margin-bottom: 0.55rem;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+  }
+  .track-card:hover {
+    background: #232323;
+    border-color: #2E2E2E;
+  }
+  .track-card .art {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 6px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.85);
   }
   .track-card .rank {
-    font-family: 'Fraunces', serif;
+    font-family: 'Poppins', sans-serif;
     font-weight: 600;
-    font-size: 1.1rem;
-    color: #B5652A;
-    width: 2rem;
+    font-size: 1rem;
+    color: #6A6A6A;
+    width: 1.6rem;
     flex-shrink: 0;
+    text-align: center;
   }
   .track-card .info { flex-grow: 1; min-width: 0; }
   .track-card .track-name {
     font-weight: 600;
-    color: #1B1D1B;
+    color: #FFFFFF;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
   .track-card .artist {
-    color: #5B5F58;
-    font-size: 0.9rem;
+    color: #B3B3B3;
+    font-size: 0.88rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
   .track-card .why-match {
-    color: #3E7C74;
-    font-size: 0.78rem;
-    margin-top: 0.2rem;
+    display: inline-block;
+    color: #1DB954;
+    background: rgba(29, 185, 84, 0.12);
+    font-size: 0.72rem;
+    font-weight: 600;
     letter-spacing: 0.01em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    margin-top: 0.35rem;
   }
   .track-card .similarity {
-    font-family: 'Fraunces', serif;
-    font-weight: 600;
-    color: #3E7C74;
-    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    color: #1DB954;
+    font-size: 0.95rem;
     flex-shrink: 0;
+    background: rgba(29, 185, 84, 0.1);
+    padding: 0.25rem 0.6rem;
+    border-radius: 500px;
   }
 
   .footer-note {
-    color: #767B72;
+    color: #6A6A6A;
     font-size: 0.82rem;
     margin-top: 2.5rem;
   }
-  .footer-note a { color: #3E7C74; }
+  .footer-note a { color: #1DB954; text-decoration: none; }
+  .footer-note a:hover { text-decoration: underline; }
 </style>
 """,
     unsafe_allow_html=True,
@@ -172,6 +269,15 @@ def load_state():
 
 
 FEATURE_COL_INDEX = {name: i for i, name in enumerate(FEATURES)}
+
+
+def art_gradient(track_id: str) -> str:
+    """Deterministic gradient per track (Spotify-style placeholder art), so the same
+    song always gets the same "cover" instead of a random color on every rerun."""
+    h = int(hashlib.md5(track_id.encode()).hexdigest(), 16)
+    hue1 = h % 360
+    hue2 = (hue1 + 45) % 360
+    return f"linear-gradient(135deg, hsl({hue1},55%,42%), hsl({hue2},60%,22%))"
 
 
 def explain_match(seed_idx: int, other_idx: int, feature_matrix: np.ndarray, n: int = 2) -> list[str]:
@@ -261,6 +367,15 @@ else:
     def pick(track_id: str, display: str) -> None:
         st.session_state._pending_pick = (track_id, display)
 
+    def find_matches(df: pd.DataFrame, q: str) -> pd.DataFrame:
+        exact = df[df["track_name"].str.lower() == q]
+        starts = df[df["track_name"].str.lower().str.startswith(q, na=False)]
+        contains = df[
+            df["track_name"].str.lower().str.contains(q, na=False, regex=False)
+            | df["artists"].str.lower().str.contains(q, na=False, regex=False)
+        ]
+        return next((m for m in (exact, starts, contains) if not m.empty), df.iloc[0:0])
+
     if submitted:
         st.session_state.last_query = query
         resolved_id = st.session_state.seed_track_id
@@ -269,17 +384,19 @@ else:
         current_label = None
         if resolved_id is not None:
             row = tracks.set_index("track_id").loc[resolved_id]
-            current_label = f"{row.track_name} — {row.artists}"
+            current_label = f"{row.track_name} by {row.artists}"
         if query.strip() and query.strip() != current_label:
             q = query.strip().lower()
-            exact = pool[pool["track_name"].str.lower() == q]
-            starts = pool[pool["track_name"].str.lower().str.startswith(q, na=False)]
-            contains = pool[
-                pool["track_name"].str.lower().str.contains(q, na=False, regex=False)
-                | pool["artists"].str.lower().str.contains(q, na=False, regex=False)
-            ]
-            best = next((m for m in (exact, starts, contains) if not m.empty), None)
-            resolved_id = best.iloc[0]["track_id"] if best is not None else None
+            # Search the mood/artist-filtered pool first, but a song title typed here
+            # isn't guaranteed to belong to the currently selected filter (e.g. a
+            # collab credited to a different primary artist, or a mood cluster that
+            # happens to not include it) — falling back to the full catalog instead of
+            # giving up is what makes this behave like an actual search box rather
+            # than a filter that silently swallows valid queries.
+            matches = find_matches(pool, q)
+            if matches.empty:
+                matches = find_matches(tracks, q)
+            resolved_id = matches.iloc[0]["track_id"] if not matches.empty else None
 
         if resolved_id is None:
             st.warning("Couldn't find a matching song — try a suggestion below, or a different search.")
@@ -288,17 +405,29 @@ else:
 
     # Suggestions are shown from the last *submitted* query (not live keystrokes,
     # since the query is now only reliably known at submission time inside the form
-    # above) — click one to switch the seed track.
+    # above) — click one to switch the seed track. Same pool-then-full-catalog
+    # fallback as the resolution above, so suggestions don't go empty just because
+    # the match lives outside the current mood/artist filter.
     if st.session_state.last_query.strip():
         q = st.session_state.last_query.strip().lower()
         name_match = pool["track_name"].str.lower().str.contains(q, na=False, regex=False)
         artist_match = pool["artists"].str.lower().str.contains(q, na=False, regex=False)
-        suggestions = pool[name_match | artist_match].head(8)
+        suggestions = pool[name_match | artist_match]
+        suggestion_scope = pool
+        if suggestions.empty:
+            name_match = tracks["track_name"].str.lower().str.contains(q, na=False, regex=False)
+            artist_match = tracks["artists"].str.lower().str.contains(q, na=False, regex=False)
+            suggestions = tracks[name_match | artist_match]
+            suggestion_scope = tracks
+        suggestions = suggestions.head(8)
 
         if not suggestions.empty:
-            st.caption("Other matches for your last search:")
+            if suggestion_scope is not pool:
+                st.caption("No matches in your current mood/artist filter — showing results from the full catalog:")
+            else:
+                st.caption("Other matches for your last search:")
             for row in suggestions.itertuples():
-                display = f"{row.track_name} — {row.artists}"
+                display = f"{row.track_name} by {row.artists}"
                 if st.button(display, key=f"suggest_{row.track_id}", use_container_width=True):
                     pick(row.track_id, display)
                     st.rerun()
@@ -307,9 +436,13 @@ else:
     if seed_track_id is not None:
         seed_row = tracks.set_index("track_id").loc[seed_track_id]
 
+        seed_art = art_gradient(seed_track_id)
         st.markdown(
-            f'<div class="seed-banner">Finding songs that sound like '
-            f'<b>{seed_row.track_name}</b> by {seed_row.artists}</div>',
+            f'<div class="seed-banner">'
+            f'<div class="art" style="background:{seed_art}">♪</div>'
+            f'<div><span class="eyebrow">Finding tracks like</span>'
+            f'<b>{seed_row.track_name}</b> by {seed_row.artists}</div>'
+            f'</div>',
             unsafe_allow_html=True,
         )
 
@@ -324,9 +457,11 @@ else:
             for i, (tid, sim) in enumerate(results, start=1):
                 row = track_lookup.loc[tid]
                 why = explain_match(seed_idx, idx_lookup[tid], feature_matrix)
+                art_bg = art_gradient(tid)
                 cards.append(
                     f'<div class="track-card">'
                     f'<div class="rank">{i:02d}</div>'
+                    f'<div class="art" style="background:{art_bg}">♪</div>'
                     f'<div class="info">'
                     f'<div class="track-name">{row.track_name}</div>'
                     f'<div class="artist">{row.artists}</div>'

@@ -11,6 +11,8 @@ need to know what people actually did?
 📄 **[Read the technical case study](reports/case_study.md)** — full methodology, every number sourced to a notebook cell
 🚀 **[Try the live demo](https://music-taste-recommender-lryc4l3hnfqbmjwfqhmnne.streamlit.app/)** — pick a mood, type a song or artist, see real audio-feature-similar tracks across 1.1M+ songs
 
+![Demo app screenshot: dark mode UI showing a mood/artist filter, a song search, and a list of similar tracks with match percentages and explanations](reports/figures/app_preview.png)
+
 ## Architecture
 
 ```mermaid
