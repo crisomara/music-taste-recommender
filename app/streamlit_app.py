@@ -232,39 +232,37 @@ if pool.empty:
 else:
     if "seed_track_id" not in st.session_state:
         st.session_state.seed_track_id = None
+    if "last_query" not in st.session_state:
+        st.session_state.last_query = ""
 
-    # A clicked suggestion is applied here, *before* the text_input widget below is
-    # instantiated — session_state for a widget's key can only be set before that
-    # widget is created in a given run, not after.
+    # A clicked suggestion is applied here, *before* the form below is instantiated —
+    # session_state for a widget's key can only be set before that widget is created
+    # in a given run, not after.
     pending = st.session_state.pop("_pending_pick", None)
     if pending is not None:
         st.session_state.seed_track_id = pending[0]
         st.session_state.song_query = pending[1]
 
-    query = st.text_input(
-        "Song",
-        key="song_query",
-        placeholder="Start typing a song or artist name…",
-    )
+    # Plain (non-form) st.text_input only syncs its typed value to the backend on
+    # blur/Enter — clicking a separate button right after typing can race and submit
+    # a stale value, which is exactly the "couldn't find a match" bug reported after
+    # real typing (a plain script-level test of the same resolution logic passed
+    # cleanly, which pointed at this browser-side sync race rather than the matching
+    # code itself). st.form guarantees the input and the submit action are captured
+    # together atomically, which a bare text_input + sibling button cannot.
+    with st.form("search_form"):
+        query = st.text_input(
+            "Song",
+            key="song_query",
+            placeholder="Start typing a song or artist name…",
+        )
+        submitted = st.form_submit_button("🔍 Find similar tracks", type="primary")
 
     def pick(track_id: str, display: str) -> None:
         st.session_state._pending_pick = (track_id, display)
 
-    if query.strip():
-        q = query.strip().lower()
-        name_match = pool["track_name"].str.lower().str.contains(q, na=False, regex=False)
-        artist_match = pool["artists"].str.lower().str.contains(q, na=False, regex=False)
-        suggestions = pool[name_match | artist_match].head(8)
-
-        if not suggestions.empty:
-            st.caption("Suggestions — click one, or keep typing and press the button below")
-            for row in suggestions.itertuples():
-                display = f"{row.track_name} — {row.artists}"
-                if st.button(display, key=f"suggest_{row.track_id}", use_container_width=True):
-                    pick(row.track_id, display)
-                    st.rerun()
-
-    if st.button("🔍 Find similar tracks", type="primary"):
+    if submitted:
+        st.session_state.last_query = query
         resolved_id = st.session_state.seed_track_id
         # If the text was edited after a suggestion was picked (or never picked at
         # all), resolve the current free-typed text to the closest match instead.
@@ -284,9 +282,26 @@ else:
             resolved_id = best.iloc[0]["track_id"] if best is not None else None
 
         if resolved_id is None:
-            st.warning("Couldn't find a matching song — try a suggestion or a different search.")
+            st.warning("Couldn't find a matching song — try a suggestion below, or a different search.")
         else:
             st.session_state.seed_track_id = resolved_id
+
+    # Suggestions are shown from the last *submitted* query (not live keystrokes,
+    # since the query is now only reliably known at submission time inside the form
+    # above) — click one to switch the seed track.
+    if st.session_state.last_query.strip():
+        q = st.session_state.last_query.strip().lower()
+        name_match = pool["track_name"].str.lower().str.contains(q, na=False, regex=False)
+        artist_match = pool["artists"].str.lower().str.contains(q, na=False, regex=False)
+        suggestions = pool[name_match | artist_match].head(8)
+
+        if not suggestions.empty:
+            st.caption("Other matches for your last search:")
+            for row in suggestions.itertuples():
+                display = f"{row.track_name} — {row.artists}"
+                if st.button(display, key=f"suggest_{row.track_id}", use_container_width=True):
+                    pick(row.track_id, display)
+                    st.rerun()
 
     seed_track_id = st.session_state.seed_track_id
     if seed_track_id is not None:

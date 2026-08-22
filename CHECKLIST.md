@@ -51,7 +51,7 @@ was actually run and verified during that retrofit, not marked aspirationally.
 - [x] Data augmentation/preprocessing pipeline
 - [x] MLOps practices: model versioning, experiment tracking
 - [x] Deployed as a REST API (FastAPI) — `/health`, `/users/sample`, `/tracks/sample`, `/recommend/{user_id}`, `/similar/{track_id}`, all verified with real responses
-- [x] Demo app (Streamlit) — verified boots and serves both flows (recommend-for-listener, find-similar-track)
+- [x] Demo app (Streamlit) — verified boots and serves the full mood → artist → song → similar-tracks flow, with match explanations, over a 1.1M-track catalog
 - [x] Written explanation of a real-world application — README "Business relevance"
 
 ## 9. Forward-Looking Signals (2025+)

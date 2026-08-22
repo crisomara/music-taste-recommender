@@ -23,25 +23,34 @@ flowchart LR
         D --> F[(als_model.pkl\n+ joined_train.parquet)]
     end
 
-    subgraph artifacts["Trained artifacts"]
-        F --> G[Hugging Face Hub\nmodel-taste-recommender-artifacts]
+    subgraph largecat["Demo-only catalog (scripts/build_large_catalog.py)"]
+        K1[Kaggle: 1.2M tracks] --> K2[Dedup + mood clustering]
+        K2 --> K3[(large_catalog.parquet)]
+    end
+
+    subgraph artifacts["Hugging Face Hub — music-taste-recommender-artifacts"]
+        F --> G[als_model.pkl\njoined_train.parquet]
+        K3 --> G2[large_catalog.parquet]
     end
 
     subgraph serving["Serving layer"]
         G --> H[FastAPI\napi/main.py]
-        G --> I[Streamlit demo\napp/streamlit_app.py]
+        G2 --> I[Streamlit demo\napp/streamlit_app.py]
     end
 
     H --> J[/GET recommend, similar/]
-    I --> K[Interactive UI]
+    I --> Kd[Mood -> Artist -> Song search\n+ match explanations]
 ```
 
 The offline pipeline (training, evaluation, the full case study) is what `notebooks/`
-does. The serving layer is separate and lightweight: both the API and the demo app load
-the same trained artifacts and reuse the same `src/` recommendation logic — no modeling
-code is duplicated for serving. Artifacts live on Hugging Face Hub rather than in git
-because the fitted ALS model is 222MB, over GitHub's file-size limit; both `api/` and
-`app/` download and cache them on first run if not already present locally.
+does, and is what the FastAPI service (`api/`) serves — both stay on the original
+114k-track dataset. The Streamlit demo (`app/`) is intentionally separate: it uses its
+own much larger 1.1M-track catalog (see the Data section below), reusing the *code
+patterns* from `src/` (StandardScaler + cosine similarity, artifact-download fallback)
+without sharing the underlying data. Both trained/built artifacts live on Hugging Face
+Hub rather than in git — the ALS model is 222MB and the large catalog is 73MB, both
+over or close to GitHub's practical file-size limits — and each consuming module
+downloads and caches what it needs on first run if not already present locally.
 
 ## Results
 
@@ -152,6 +161,8 @@ api/                        # FastAPI serving layer
   schemas.py
 app/
   streamlit_app.py          # interactive demo (Streamlit Community Cloud)
+.streamlit/
+  config.toml                # demo app theme (matches reports/presentation.html)
 scripts/
   train_als_with_mlflow.py  # MLflow-tracked rerun of notebook 03's training
   build_large_catalog.py    # builds the demo app's 1.1M-track catalog (run once, uploaded to HF Hub)
@@ -189,6 +200,23 @@ present locally (from having run the notebooks) — no manual setup needed eithe
 ```
 streamlit run app/streamlit_app.py
 ```
+
+Flow: pick a **mood/style** (auto-generated from the catalog's own audio-feature
+clusters — see Data below), narrow to an **artist** (stays selected while you search
+songs), then type a **song** — live suggestions appear as you type, or just type
+freely and press **Find similar tracks**. Each result shows which audio features
+actually drove the match (e.g. "Matched on Tempo & Energy"), not just a similarity
+score. First load downloads the 73MB catalog from Hugging Face Hub if it isn't already
+cached locally — no Kaggle account needed to *run* the app, only to *rebuild* the
+catalog from scratch (see below).
+
+To rebuild `large_catalog.parquet` from the raw Kaggle dataset (not required to run the
+app — only if regenerating the artifact itself):
+```
+python scripts/build_large_catalog.py
+```
+Needs a Kaggle API token (`KAGGLE_TOKEN` in `.env`, see `.env` for the expected format)
+and a Hugging Face write token (`HF_TOKEN`) to re-upload the result.
 
 ## Running with Docker
 
