@@ -1,0 +1,87 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install ruff==0.16.10
+      - name: ruff check (src, api, app, scripts, tests, notebooks)
+        run: ruff check --output-format=github .
+
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-dev.txt
+      - name: Install
+        run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Compile check (app and scripts are not imported by the tests)
+        run: python -m compileall -q src api app scripts
+      - name: pytest
+        # No network artifacts are needed: tests use synthetic data and the committed Spotify CSV.
+        run: pytest --cov=src --cov=api --cov-report=term-missing --cov-report=xml
+        env:
+          OPENBLAS_NUM_THREADS: '1'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage.xml
+          retention-days: 7
+
+  links:
+    name: Internal links (offline)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lycheeverse/lychee-action@v2
+        with:
+          args: --offline --no-progress --verbose README.md CHECKLIST.md reports/case_study.md reports/presentation.html
+          fail: true
+          jobSummary: true
+
+  docker:
+    name: Docker build (no push)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: music-taste-recommender:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Image imports the API
+        # The startup hook (artifact download) only runs when uvicorn serves the app, so importing is offline.
+        run: docker run --rm music-taste-recommender:ci python -c "import api.main; print(api.main.app.title)"

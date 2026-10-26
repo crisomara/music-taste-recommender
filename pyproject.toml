@@ -1,0 +1,24 @@
+# Tool configuration only (the project is not packaged); dependencies are in requirements.txt.
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+extend-include = ["*.ipynb"]
+
+[tool.ruff.lint]
+# Ruff defaults plus pycodestyle warnings and bugbear.
+select = ["E4", "E7", "E9", "F", "W", "B"]
+# zip(strict=) is not required: every zip in src/ pairs columns of the same DataFrame.
+ignore = ["B905"]
+
+[tool.ruff.lint.per-file-ignores]
+# These entry points put the project root on sys.path before importing src/.
+"scripts/*.py" = ["E402"]
+"app/*.py" = ["E402"]
+# Exploratory notebooks: late imports and one-line plot styling are intentional.
+"notebooks/*.ipynb" = ["E402", "E702"]

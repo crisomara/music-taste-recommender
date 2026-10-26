@@ -1,5 +1,7 @@
 # Music Taste Recommender
 
+[![CI](https://github.com/crisomara/music-taste-recommender/actions/workflows/ci.yml/badge.svg)](https://github.com/crisomara/music-taste-recommender/actions/workflows/ci.yml) [![Security](https://github.com/crisomara/music-taste-recommender/actions/workflows/security.yml/badge.svg)](https://github.com/crisomara/music-taste-recommender/actions/workflows/security.yml)
+
 A hybrid (content-based + collaborative filtering) music recommender, evaluated against
 13.4 million real listening events — built as a case study in recommender
 systems and honest data storytelling.
@@ -251,6 +253,14 @@ The live demo is intentionally scoped to one thing — pick a mood, then a song 
 artist, and see audio-feature-similar tracks across a 1.1M-track catalog — rather than
 exposing both recommenders; the full hybrid recommender (collaborative + content-based)
 is still available by running the FastAPI service locally (see above) or the notebooks.
+
+## CI
+
+- **CI** (`.github/workflows/ci.yml`, every push and pull request): ruff lint (config in `pyproject.toml`, notebooks included); pytest unit tests with coverage (`tests/`: name normalization, temporal split, metrics, content-based, ALS and hybrid cascade on synthetic data, FastAPI endpoints, loading the committed Spotify CSV, and nbformat validation of the notebooks, which are not executed because they download LastFM-1K); offline link check of the README, case study and presentation; and a Docker build (not pushed) that imports the API inside the image.
+- **Security** (`.github/workflows/security.yml`, also weekly): gitleaks, pip-audit on `requirements.txt`, CodeQL (Python), dependency review on pull requests, and actionlint.
+- **Dependabot**: weekly updates for pip, the Docker base image and GitHub Actions.
+
+Run the checks locally with `pip install -r requirements.txt -r requirements-dev.txt`, then `ruff check .` and `pytest`. No test downloads the Hugging Face artifacts.
 
 ## License
 

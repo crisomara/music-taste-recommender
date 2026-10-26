@@ -1,0 +1,6 @@
+# Test and lint tooling (runtime dependencies are in requirements.txt).
+pytest
+pytest-cov
+httpx
+nbformat
+ruff==0.16.10
