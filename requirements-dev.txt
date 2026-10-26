@@ -3,4 +3,4 @@ pytest
 pytest-cov
 httpx
 nbformat
-ruff==0.16.10
+ruff==0.17.2
