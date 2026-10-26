@@ -12,6 +12,6 @@ huggingface_hub
 fastapi
 uvicorn[standard]
 streamlit
-mlflow>=2.9
+mlflow>=3.17.2
 python-dotenv
 kagglehub
